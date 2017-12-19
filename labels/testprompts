@@ -1,0 +1,50 @@
+1. SENT-START 来 七 箱 银桥 红枣 牛奶 多加糖 SENT-END 
+2. SENT-START 我 来 三 箱 银桥 纯 牛奶 少加糖 SENT-END 
+3. SENT-START 我 要 九 箱 银桥 核桃 牛奶 正常 SENT-END 
+4. SENT-START 来 八 箱 银桥 红枣 牛奶 多加糖 SENT-END 
+5. SENT-START 来 十 箱 银桥 红枣 牛奶 多加糖 SENT-END 
+6. SENT-START 我 来 十 箱 银桥 红枣 牛奶 正常 SENT-END 
+7. SENT-START 我 要 六 箱 银桥 核桃 牛奶 正常 SENT-END 
+8. SENT-START 来 三 箱 银桥 纯 牛奶 多加糖 SENT-END 
+9. SENT-START 要 七 箱 银桥 红枣 牛奶 SENT-END 
+10. SENT-START 我 来 五 箱 银桥 纯 牛奶 多加糖 SENT-END 
+11. SENT-START 要 三 箱 银桥 核桃 牛奶 SENT-END 
+12. SENT-START 我 要 五 箱 银桥 红枣 牛奶 正常 SENT-END 
+13. SENT-START 来 四 箱 银桥 核桃 牛奶 多加糖 SENT-END 
+14. SENT-START 要 四 箱 银桥 核桃 牛奶 SENT-END 
+15. SENT-START 来 六 箱 银桥 核桃 牛奶 少加糖 SENT-END 
+16. SENT-START 我 要 六 箱 银桥 红枣 牛奶 SENT-END 
+17. SENT-START 我 来 七 箱 银桥 红枣 牛奶 少加糖 SENT-END 
+18. SENT-START 我 要 八 箱 银桥 纯 牛奶 少加糖 SENT-END 
+19. SENT-START 来 七 箱 银桥 纯 牛奶 SENT-END 
+20. SENT-START 要 三 箱 银桥 纯 牛奶 正常 SENT-END 
+21. SENT-START 我 来 十 箱 银桥 纯 牛奶 少加糖 SENT-END 
+22. SENT-START 来 六 箱 银桥 核桃 牛奶 正常 SENT-END 
+23. SENT-START 我 要 七 箱 银桥 红枣 牛奶 少加糖 SENT-END 
+24. SENT-START 我 要 八 箱 银桥 核桃 牛奶 正常 SENT-END 
+25. SENT-START 来 四 箱 银桥 红枣 牛奶 SENT-END 
+26. SENT-START 我 来 十 箱 银桥 红枣 牛奶 正常 SENT-END 
+27. SENT-START 我 要 三 箱 银桥 纯 牛奶 SENT-END 
+28. SENT-START 我 要 四 箱 银桥 核桃 牛奶 多加糖 SENT-END 
+29. SENT-START 来 十 箱 银桥 核桃 牛奶 正常 SENT-END 
+30. SENT-START 来 九 箱 银桥 红枣 牛奶 SENT-END 
+31. SENT-START 来 五 箱 银桥 红枣 牛奶 多加糖 SENT-END 
+32. SENT-START 要 二 箱 银桥 红枣 牛奶 多加糖 SENT-END 
+33. SENT-START 来 七 箱 银桥 红枣 牛奶 多加糖 SENT-END 
+34. SENT-START 我 来 四 箱 银桥 红枣 牛奶 少加糖 SENT-END 
+35. SENT-START 我 来 一 箱 银桥 红枣 牛奶 正常 SENT-END 
+36. SENT-START 我 要 十 箱 银桥 纯 牛奶 SENT-END 
+37. SENT-START 要 七 箱 银桥 核桃 牛奶 少加糖 SENT-END 
+38. SENT-START 要 三 箱 银桥 核桃 牛奶 SENT-END 
+39. SENT-START 我 要 二 箱 银桥 红枣 牛奶 少加糖 SENT-END 
+40. SENT-START 要 四 箱 银桥 核桃 牛奶 多加糖 SENT-END 
+41. SENT-START 我 来 四 箱 银桥 核桃 牛奶 SENT-END 
+42. SENT-START 我 来 四 箱 银桥 核桃 牛奶 少加糖 SENT-END 
+43. SENT-START 来 三 箱 银桥 红枣 牛奶 正常 SENT-END 
+44. SENT-START 要 五 箱 银桥 纯 牛奶 少加糖 SENT-END 
+45. SENT-START 我 来 四 箱 银桥 纯 牛奶 SENT-END 
+46. SENT-START 来 三 箱 银桥 红枣 牛奶 多加糖 SENT-END 
+47. SENT-START 我 要 八 箱 银桥 红枣 牛奶 正常 SENT-END 
+48. SENT-START 来 九 箱 银桥 红枣 牛奶 少加糖 SENT-END 
+49. SENT-START 我 来 一 箱 银桥 纯 牛奶 少加糖 SENT-END 
+50. SENT-START 要 五 箱 银桥 核桃 牛奶 SENT-END 

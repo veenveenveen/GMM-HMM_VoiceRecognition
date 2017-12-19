@@ -1,0 +1,8 @@
+$brand = 银桥;
+$milk = 牛奶;
+$goods = $brand ( 纯 | 核桃 | 红枣 ) $milk;
+$count = 一 | 二 | 三 | 四 | 五 | 六 | 七 | 八 | 九 | 十;
+$unit = 箱;
+$addition = 多加糖 | 少加糖 | 正常;
+
+(SENT-START ( [我] (来|要) $count $unit $goods [$addition] ) SENT-END)
