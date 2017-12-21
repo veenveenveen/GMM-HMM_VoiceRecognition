@@ -3,7 +3,7 @@ Dictionary Usage Statistics
 ---------------------------
   Dictionary    TotalWords WordsUsed  TotalProns PronsUsed
        names        39         39         39         39
-        dict        39         39         39         39
+       dict1        39         39         39         39
 
 39 words required, 0 missing
 
@@ -47,4 +47,4 @@ New Phone Usage Counts
  36. y     :     1
  37. yin   :     2
 
-Dictionary dict created
+Dictionary dict/dict1 created

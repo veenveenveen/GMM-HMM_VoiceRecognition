@@ -1,0 +1,141 @@
+1.定义任务语法 
+	gram
+	HTK识别器实际上需要的是一个使用更低层的符号定义的词网络，称为HTK标准网格SLF格式
+（HTK Standard Lattice Format (SLF)），在SLF里，每个词的实例和词之间的转换都明确列出 了。这种词网络可以使用HParse工具由上面的语法自动建立，比如，包含上面的语法的文件称为gram，执行下面的操作
+	HParse gram wdnet
+将会建立一个等效的词网络并存储到wdnet文件中
+2.词典
+	声母 21 个
+	b、p、m、f、d、t、n、l、g、k、h、j、q、x、zh、ch、sh、r、z、c、s
+	韵母 24 个
+	a、o、e、i、u、v ai 、ei、 ui 、ao、 ou、 iu 、ie 、ve、 er、 an 、en 、in、 un 、vn 、ang 、eng、 ing 、ong
+	整体认读 16 个
+	zhi 、chi 、shi 、ri 、zi 、ci 、si 、yi 、wu 、yu 、ye 、yue 、yin 、yun 、yuan 、ying。前鼻音韵母 an 、en 、in、 un 、vn。后鼻音韵母 ang 、eng、 ing 、ong
+
+	HDMan -m -w def/wlist -n lists/monophones1 -l dlog dict/dict1 def/names
+    names 文件是手工制作的词语的发音(包括 SEND_START,SEND_END)
+    wlist 是出现在任务语法中的所有单词的有序列表
+    monophones1 是用到的音素的列表
+    dlog 为参数文件
+
+    #!~/home/hqm/usr/local/perl/bin/perl -w
+3.生成句子 并 录音
+    3.1 生成例句
+	HSGen 工具可以生成符合 task grammar 的句子,用来指导录音(HTK book 里叫 sentence prompts)
+	HSGen -l -n 100 wdnet dict>trainprompts//100个训练用语音数据文件
+	HSGen -l -n 15 wdnet dict>testprompts//15个测试用语音数据文件
+    3.2录音
+ 	HSLab S0001
+4.标注数据 得到真值文件
+    Perl 脚本 prompts2mlf 可以把录音文本截成单词级真值文件。例如:
+	perl ./scripts/prompts2mlf ./labels/trainwords.mlf ./labels/trainprompts0
+	perl ./scripts/prompts2mlf ./labels/testwords.mlf ./labels/testprompts0
+    标注编辑器 HLEd 可把单词级真值文本(word level MLF)转成音素级真值文本(phone
+level MLF):
+	HLEd -l '*' -d ./dict/dict1 -i ./labels/phones0.mlf mkphones0.led ./labels/trainwords.mlf
+5.数据的特征提取
+	HCopy -T 1 -C config/config0 -S codetr.scp
+	HCopy -T 1 -C config/config0 -S codete.scp
+
+6.一致初始法创建单音素模型
+	创建proto文件
+    训练文件存于 train.scp 中,用全局均值和方差来初始化 HMM 模型的高斯参数:
+	HCompV -C ./config/config1 -f 0.01 -m -S train.scp -M ./hmms/hmm0 proto
+
+	HERest -C config/config1 -I labels/phones0.mlf -t 250.0 150.0 1000.0 -S train.scp -H hmms/hmm0/macros -H hmms/hmm0/hmmdefs -M hmms/hmm1 lists/monophones0
+	HERest -C config/config1 -I labels/phones0.mlf -t 250.0 150.0 1000.0 -S train.scp -H hmms/hmm1/macros -H hmms/hmm1/hmmdefs -M hmms/hmm2 lists/monophones0
+	HERest -C config/config1 -I labels/phones0.mlf -t 250.0 150.0 1000.0 -S train.scp -H hmms/hmm2/macros -H hmms/hmm2/hmmdefs -M hmms/hmm3 lists/monophones0
+7.确定静音模型
+	新建文件sil.hed
+	HHEd -H hmms/hmm4/macros -H hmms/hmm4/hmmdefs -M hmms/hmm5 sil.hed lists/monophones1
+	修改 mkphones0.led,去掉最后一行,存为 mkphones1.led,利用 HLEd 工具得到包含 sp的音素级真值文本:
+	HLEd -l '*' -d dict/dict2 -i labels/phones1.mlf mkphones1.led labels/trainwords.mlf
+	重估两次:
+	HERest -C config/config1 -I labels/phones1.mlf -t 250.0 150.0 1000.0 -S train.scp -H hmms/hmm5/macros -H hmms/hmm5/hmmdefs -M hmms/hmm6 lists/monophones1
+	HERest -C config/config1 -I labels/phones1.mlf -t 250.0 150.0 1000.0 -S train.scp -H hmms/hmm6/macros -H hmms/hmm6/hmmdefs -M hmms/hmm7 lists/monophones1
+	
+    这么没头没尾的干下去,太枯燥了!我们先看看这时的识别率如何吧,也能增加一点成就感。
+	执行如下命令:
+	HVite -H hmms/hmm7/macros -H hmms/hmm7/hmmdefs -S test.scp  -l '*' -i results/recout_step7.mlf -w wdnet -p 0.0 -s 5.0 dict/dict2 lists/monophones1
+	HResults -I labels/testwords.mlf lists/monophones1 results/recout_step7.mlf
+8.重校准训练数据
+	(要修改，加入×/)确认 trainwords.mlf 中的路径为”*/S0???.lab”,修改 dict 加入 silence sil 一项,另存为dict2,执行 HVite 进行 Viterbi 校准:
+	HVite -l '*' -o SWT -b silence -C config/config1 -a -H hmms/hmm7/macros -H hmms/hmm7/hmmdefs -i labels/aligned.mlf -m -t 350.0 -y lab -I labels/trainwords.mlf -S train.scp dict/dict3 lists/monophones1
+    重估两次:
+	HERest -C config/config1 -I labels/aligned.mlf -t 250.0 150.0 1000.0 -S train.scp -H hmms/hmm7/macros -H hmms/hmm7/hmmdefs -M hmms/hmm8 lists/monophones1
+	HERest -C config/config1 -I labels/aligned.mlf -t 250.0 150.0 1000.0 -S train.scp -H hmms/hmm8/macros -H hmms/hmm8/hmmdefs -M hmms/hmm9 lists/monophones1
+    我们再来看看这时的识别率怎么样
+	HVite -H hmms/hmm9/macros -H hmms/hmm9/hmmdefs -S test.scp  -l '*' -i results/recout_step8.mlf -w wdnet -p 0.0 -s 5.0 dict/dict2 lists/monophones1
+	HResults -I labels/testwords.mlf lists/monophones1 results/recout_step8.mlf
+
+创建绑定状态的三音素 HMM 模型
+9.得到三音素 HMM
+    脚本 mktri.led
+	HLEd -n lists/triphones1 -l '*' -i labels/wintri.mlf mktri.led labels/aligned.mlf
+
+	perl scripts/maketrihed lists/monophones1 lists/triphones1 生成maketri.hed
+    下面利用 HMM 编辑器初始化三音素模型。所用命令为:
+	HHEd -H hmms/hmm9/macros -H hmms/hmm9/hmmdefs -M hmms/hmm10 mktri.hed lists/monophones1
+    重估两次:
+	HERest -C config/config1 -I labels/wintri.mlf -t 250.0 150.0 1000.0 -S train.scp -H hmms/hmm10/macros -H hmms/hmm10/hmmdefs -M hmms/hmm11 lists/triphones1
+	HERest -C config/config1 -I labels/wintri.mlf -t 250.0 150.0 1000.0 -s stats -S train.scp -H hmms/hmm11/macros -H hmms/hmm11/hmmdefs -M hmms/hmm12 lists/triphones1
+
+    HVite -H hmms/hmm12/macros -H hmms/hmm12/hmmdefs -S test.scp -l '*' -i results/recout_step9.mlf -w wdnet -p 0.0 -s 5.0 ./dict/dict2 lists/triphones1
+	HResults -I labels/testwords.mlf lists/monophones1 results/recout_step9.mlf
+
+33333
+HVite -H hmms/hmm12/macros -H hmms/hmm12/hmmdefs -S test1.scp -l '*' -i results/recout_step91.mlf -w wdnet -p 0.0 -s 5.0 ./dict/dict2 lists/triphones1
+	HResults -I labels/testwords.mlf lists/monophones1 results/recout_step91.mlf
+
+%%%%%%%
+
+HERest -C config/config1 -I labels/wintri.mlf -t 250.0 150.0 1000.0 -S train.scp -H hmms/hmm12/macros -H hmms/hmm12/hmmdefs -M hmms/hmm13 lists/triphones1
+	HERest -C config/config1 -I labels/wintri.mlf -t 250.0 150.0 1000.0 -s stats -S train.scp -H hmms/hmm13/macros -H hmms/hmm13/hmmdefs -M hmms/hmm14 lists/triphones1
+
+    HVite -H hmms/hmm14/macros -H hmms/hmm14/hmmdefs -S test.scp -l '*' -i results/recout_step9_1.mlf -w wdnet -p 0.0 -s 5.0 ./dict/dict2 lists/triphones1
+	HResults -I labels/testwords.mlf lists/monophones1 results/recout_step9_1.mlf
+
+%%%%%%%
+HERest -C config/config1 -I labels/wintri.mlf -t 250.0 150.0 1000.0 -S train.scp -H hmms/hmm14/macros -H hmms/hmm14/hmmdefs -M hmms/hmm15 lists/triphones1
+	HERest -C config/config1 -I labels/wintri.mlf -t 250.0 150.0 1000.0 -s stats -S train.scp -H hmms/hmm15/macros -H hmms/hmm15/hmmdefs -M hmms/hmm16 lists/triphones1
+
+    HVite -H hmms/hmm16/macros -H hmms/hmm16/hmmdefs -S test.scp -l '*' -i results/recout_step9_2.mlf -w wdnet -p 0.0 -s 5.0 ./dict/dict2 lists/triphones1
+	HResults -I labels/testwords.mlf lists/monophones1 results/recout_step9_2.mlf
+
+10.绑定三音素
+
+perl scripts/mkclscript.prl TB 350.0 lists/monophones1 > tree.hed
+
+#HHEd -H hmms/hmm12/macros -H hmms/hmm12/hmmdefs -M hmms/hmm13 tree.hed lists/triphones1 > log
+
+
+HDMan -b sp -n lists/fulllist -g global2.ded -l flog dict/dict_tri dict/dict2
+
+    这一
+步就是通过绑定状态来共享数据,使输出分布更加的稳健。 HHEd 提供两种聚类状态的机制,
+这里采用的是决策树:
+	tree.hed 用 perl 脚本 mkclscript.prl (.\scripts\目录下)生成:
+	HHEd -H hmms/hmm12/macros -H hmms/hmm12/hmmdefs -M hmms/hmm13 tree.hed lists/triphones1 > log
+
+HERest -C config/config1 -I labels/wintri.mlf -t 250.0 150.0 1000.0 -S train.scp -H hmms/hmm13/macros -H hmms/hmm13/hmmdefs -M hmms/hmm14 lists/tiedlist
+
+11.
+HVite -C config/config3 -H hmms/hmm14/macros -H hmms/hmm14/hmmdefs -S test.scp -l '*' -i results/recout_step11.mlf -w wdnet -p 0.0 -s 5.0 dict/dict2 lists/tiedlist
+其中的 config2(前文已经提到过)在 config 基础上加入 FORCECXTEXP=T,ALLOWXWRDEXP=F
+
+HResults -I labels/testwords.mlf lists/tiedlist results/recout_step11.mlf
+
+12 
+HVite -H hmm12/macros -H hmm12/hmmdefs -C config/config2 -w wdnet -p 0.0 -s 5.0 dict triphones1
+
+-然后使用 Viterbi算法处理输入观察，该算法用来测试输入观察是否与识别器的马尔 可 夫 模 型 相 一 致 。 可 以 使 用 HVite 工 具 达 到 这 个 目 的 :
+HVite -A -D -T 1 -H hmmsdef.mmf -i results/reco.mlf -w wdnet dict/dict lists/wlist input.mfcc
+input.mfc是要被识别的输入数据。
+hmmlist.txt列出要使用的模型的名称(yes,no,sil)。每个元素通过新行字符隔开。 不要忘记在最后一个元素后面插入新行。
+dict.txt是任务字典。
+net.slf是任务网络。
+reco.mlf是输出识别副本文件。
+
+13 DNN-HMM
+HVite -C config.align -H hmm_align/models -S train.scp -I train.ref.mlf \ -i train.tri.aligned.mlf -f -o MW -b sil -a -y lab dict hmm_align/xwrdtiedlist
+	
